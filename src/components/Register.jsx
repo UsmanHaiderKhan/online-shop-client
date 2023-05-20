@@ -3,17 +3,17 @@ import {faCheck, faTimes, faInfoCircle} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import axios from '../api/axios';
 
-const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
-const REGISTER_URL = '/register';
+const REGISTER_URL = '/auth/signup';
 
 const Register = () => {
-    const userRef = useRef();
+    const emailRef = useRef();
     const errRef = useRef();
 
-    const [user, setUser] = useState('');
-    const [validName, setValidName] = useState(false);
-    const [userFocus, setUserFocus] = useState(false);
+    const [email, setUser] = useState('');
+    const [validEmail, setValidEmail] = useState(false);
+    const [emailFocus, setEmailFocus] = useState(false);
 
     const [password, setPassword] = useState('');
     const [validPassword, setValidPassword] = useState(false);
@@ -27,13 +27,13 @@ const Register = () => {
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        userRef.current.focus();
+        emailRef.current.focus();
     }, []);
 
 
     useEffect(() => {
-        setValidName(USER_REGEX.test(user));
-    }, [user])
+        setValidEmail(EMAIL_REGEX.test(email));
+    }, [email])
 
     useEffect(() => {
         setValidPassword(PWD_REGEX.test(password));
@@ -42,12 +42,12 @@ const Register = () => {
 
     useEffect(() => {
         setErrMsg('');
-    }, [user, password, matchPassword])
+    }, [email, password, matchPassword])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         // if button enabled with JS hack
-        const v1 = USER_REGEX.test(user);
+        const v1 = EMAIL_REGEX.test(email);
         const v2 = PWD_REGEX.test(password);
         if (!v1 || !v2) {
             setErrMsg("Invalid Entry");
@@ -55,10 +55,11 @@ const Register = () => {
         }
         try {
             const response = await axios.post(REGISTER_URL,
-                JSON.stringify({user, password}),
+                JSON.stringify({email, password}),
                 {
                     headers: {'Content-Type': 'application/json'},
-                    withCredentials: true
+                     withCredentials: true,
+                    // Authorization: 'Bearer ' +response?.accessToken
                 }
             );
             console.log(response?.data);
@@ -72,10 +73,12 @@ const Register = () => {
             setMatchPassword('');
         } catch (err) {
             if (!err?.response) {
+                console.log(err.message);
                 setErrMsg('No Server Response');
             } else if (err.response?.status === 409) {
-                setErrMsg('Username Taken');
+                setErrMsg('Email Taken');
             } else {
+                console.log(err.message);
                 setErrMsg('Registration Failed')
             }
             errRef.current.focus();
@@ -87,32 +90,32 @@ const Register = () => {
                 <section>
                     <h1>Success!</h1>
                     <p>
-                        <a href="#">Sign In</a>
+                        <a href="/">Sign In</a>
                     </p>
                 </section>
             ) : (
                 <section>
 
                     <div className="justify-center h-screen flex items-center ">
-                        <form onSubmit={handleSubmit} className="bg-white rounded shadow-2xl w-1/5 px-8 pt-6 pb-8 mb-4">
+                        <form onSubmit={handleSubmit} className="bg-white rounded shadow-2xl lg:w-1/5 md:w-50  px-8 pt-6 pb-8 mb-4">
                             <p ref={errRef} className={errMsg ? "text-red" : "offscreen"} aria-live="assertive">{errMsg}</p>
                             <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Register User</h1>
                             <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-                                    Username
-                                    <FontAwesomeIcon icon={faCheck} className={validName ? "valid" : "hide"}/>
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+                                    Email
+                                    <FontAwesomeIcon icon={faCheck} className={validEmail ? "valid" : "hide"}/>
                                     <FontAwesomeIcon icon={faTimes}
-                                                     className={validName || !user ? "hide" : "invalid"}/>
+                                                     className={validEmail || !email ? "hide" : "invalid"}/>
                                 </label>
-                                <input onChange={e => setUser(e.target.value)} ref={userRef}
-                                       aria-invalid={validName ? "false" : "true"}
+                                <input onChange={e => setUser(e.target.value)} ref={emailRef}
+                                       aria-invalid={validEmail ? "false" : "true"}
                                        aria-describedby="uidnote" required
-                                       onFocus={() => setUserFocus(true)}
-                                       onBlur={() => setUserFocus(false)}
+                                       onFocus={() => setEmailFocus(true)}
+                                       onBlur={() => setEmailFocus(false)}
                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                       id="username" type="text" placeholder="Username"/>
+                                       id="email" type="text" placeholder="Email"/>
                                 <p id="uidnote"
-                                   className={userFocus && user && !validName ? "instructions" : "offscreen"}>
+                                   className={emailFocus && email && !validEmail ? "instructions" : "offscreen"}>
                                     <FontAwesomeIcon icon={faInfoCircle}/>
                                     4 to 24 characters.<br/>
                                     Must begin with a letter.<br/>
@@ -172,7 +175,7 @@ const Register = () => {
                                 <div className="flex items-center justify-between mt-6">
                                     <button
                                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                        disabled={!validName || !validPassword || !validMatch}>Sign Up
+                                        disabled={!validEmail || !validPassword || !validMatch}>Sign Up
                                     </button>
                                     <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
                                        href="/">
@@ -180,8 +183,17 @@ const Register = () => {
                                     </a>
                                 </div>
                             </div>
+                            <p className="mt-8 flex justify-between">
+                                Already registered?<br />
+                                <span className="line">
+                            {/*put router link here*/}
+                                    <a href="/">Sign In</a>
+                        </span>
+                            </p>
                         </form>
+
                     </div>
+
                 </section>
             )}
         </>
