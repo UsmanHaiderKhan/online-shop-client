@@ -11,7 +11,7 @@ const Register = () => {
     const emailRef = useRef();
     const errRef = useRef();
 
-    const [email, setUser] = useState('');
+    const [email, setEmail] = useState('');
     const [validEmail, setValidEmail] = useState(false);
     const [emailFocus, setEmailFocus] = useState(false);
 
@@ -68,7 +68,7 @@ const Register = () => {
             setSuccess(true);
             //clear state and controlled inputs
             //need value attrib on inputs for this
-            setUser('');
+            setEmail('');
             setPassword('');
             setMatchPassword('');
         } catch (err) {
@@ -107,7 +107,7 @@ const Register = () => {
                                     <FontAwesomeIcon icon={faTimes}
                                                      className={validEmail || !email ? "hide" : "invalid"}/>
                                 </label>
-                                <input onChange={e => setUser(e.target.value)} ref={emailRef}
+                                <input onChange={e => setEmail(e.target.value)} ref={emailRef}
                                        aria-invalid={validEmail ? "false" : "true"}
                                        aria-describedby="uidnote" required
                                        onFocus={() => setEmailFocus(true)}
